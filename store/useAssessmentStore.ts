@@ -1,64 +1,159 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { AssessorRole } from "@/types";
 
-interface AssessmentState {
+interface RoleState {
   answers: Record<string, number>;
   currentCompetencyIndex: number;
   startedAt: string | null;
   lastUpdatedAt: string | null;
+}
 
+const emptyRoleState = (): RoleState => ({
+  answers: {},
+  currentCompetencyIndex: 0,
+  startedAt: null,
+  lastUpdatedAt: null,
+});
+
+interface AssessmentState {
+  activeRole: AssessorRole;
+  roles: Record<AssessorRole, RoleState>;
+  sessionCode: string | null;
+
+  setActiveRole: (role: AssessorRole) => void;
+  setSessionCode: (code: string | null) => void;
   setAnswer: (itemId: string, value: number) => void;
   setCompetencyIndex: (index: number) => void;
   nextCompetency: (totalCompetencies: number) => void;
   prevCompetency: () => void;
-  reset: () => void;
-  hasProgress: () => boolean;
+  resetRole: (role: AssessorRole) => void;
+  resetAll: () => void;
+  loadRoleAnswers: (
+    role: AssessorRole,
+    answers: Record<string, number>,
+    competencyIndex: number
+  ) => void;
 }
 
 export const useAssessmentStore = create<AssessmentState>()(
   persist(
-    (set, get) => ({
-      answers: {},
-      currentCompetencyIndex: 0,
-      startedAt: null,
-      lastUpdatedAt: null,
+    (set) => ({
+      activeRole: "self",
+      sessionCode: null,
+      roles: {
+        self: emptyRoleState(),
+        team_lead: emptyRoleState(),
+        product_lead: emptyRoleState(),
+      },
+
+      setActiveRole: (role) => set({ activeRole: role }),
+
+      setSessionCode: (code) => set({ sessionCode: code }),
 
       setAnswer: (itemId, value) =>
-        set((state) => ({
-          answers: { ...state.answers, [itemId]: value },
-          startedAt: state.startedAt || new Date().toISOString(),
-          lastUpdatedAt: new Date().toISOString(),
-        })),
-
-      setCompetencyIndex: (index) =>
-        set({ currentCompetencyIndex: index }),
-
-      nextCompetency: (totalCompetencies) =>
-        set((state) => ({
-          currentCompetencyIndex: Math.min(
-            state.currentCompetencyIndex + 1,
-            totalCompetencies - 1
-          ),
-        })),
-
-      prevCompetency: () =>
-        set((state) => ({
-          currentCompetencyIndex: Math.max(0, state.currentCompetencyIndex - 1),
-        })),
-
-      reset: () =>
-        set({
-          answers: {},
-          currentCompetencyIndex: 0,
-          startedAt: null,
-          lastUpdatedAt: null,
+        set((state) => {
+          const role = state.activeRole;
+          const roleState = state.roles[role];
+          return {
+            roles: {
+              ...state.roles,
+              [role]: {
+                ...roleState,
+                answers: { ...roleState.answers, [itemId]: value },
+                startedAt: roleState.startedAt || new Date().toISOString(),
+                lastUpdatedAt: new Date().toISOString(),
+              },
+            },
+          };
         }),
 
-      hasProgress: () => Object.keys(get().answers).length > 0,
+      setCompetencyIndex: (index) =>
+        set((state) => ({
+          roles: {
+            ...state.roles,
+            [state.activeRole]: {
+              ...state.roles[state.activeRole],
+              currentCompetencyIndex: index,
+            },
+          },
+        })),
+
+      nextCompetency: (totalCompetencies) =>
+        set((state) => {
+          const role = state.activeRole;
+          return {
+            roles: {
+              ...state.roles,
+              [role]: {
+                ...state.roles[role],
+                currentCompetencyIndex: Math.min(
+                  state.roles[role].currentCompetencyIndex + 1,
+                  totalCompetencies - 1
+                ),
+              },
+            },
+          };
+        }),
+
+      prevCompetency: () =>
+        set((state) => {
+          const role = state.activeRole;
+          return {
+            roles: {
+              ...state.roles,
+              [role]: {
+                ...state.roles[role],
+                currentCompetencyIndex: Math.max(
+                  0,
+                  state.roles[role].currentCompetencyIndex - 1
+                ),
+              },
+            },
+          };
+        }),
+
+      resetRole: (role) =>
+        set((state) => ({
+          roles: {
+            ...state.roles,
+            [role]: emptyRoleState(),
+          },
+        })),
+
+      resetAll: () =>
+        set({
+          activeRole: "self",
+          sessionCode: null,
+          roles: {
+            self: emptyRoleState(),
+            team_lead: emptyRoleState(),
+            product_lead: emptyRoleState(),
+          },
+        }),
+
+      loadRoleAnswers: (role, answers, competencyIndex) =>
+        set((state) => ({
+          roles: {
+            ...state.roles,
+            [role]: {
+              ...state.roles[role],
+              answers,
+              currentCompetencyIndex: competencyIndex,
+              startedAt: state.roles[role].startedAt || new Date().toISOString(),
+              lastUpdatedAt: new Date().toISOString(),
+            },
+          },
+        })),
     }),
     {
-      name: "uxcx-assessment:v1",
+      name: "uxcx-assessment:v3",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        activeRole: state.activeRole,
+        sessionCode: state.sessionCode,
+        roles: state.roles,
+      }),
     }
   )
 );

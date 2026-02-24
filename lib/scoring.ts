@@ -3,6 +3,8 @@ import type {
   AssessmentResults,
   CompetencyResult,
   AxisScore,
+  CompetencyGap,
+  AssessorRole,
 } from "@/types";
 
 export function calculateResults(
@@ -15,6 +17,13 @@ export function calculateResults(
   ).length;
   const completionPercent =
     totalItems > 0 ? Math.round((totalAnswered / totalItems) * 100) : 0;
+
+  const compAxisMap = new Map<string, string>();
+  for (const [axis, ids] of Object.entries(model.axisMapping)) {
+    for (const id of ids) {
+      compAxisMap.set(id, axis);
+    }
+  }
 
   const competencyResults: CompetencyResult[] = model.competencies.map(
     (comp) => {
@@ -56,24 +65,26 @@ export function calculateResults(
         }
       }
 
-      const maxLevel = levelsPresent.length > 0
-        ? Math.max(...levelsPresent)
-        : 1;
-      const gapToNext =
-        achievedLevel < maxLevel ? achievedLevel + 1 - achievedLevel : 0;
+      const maxLevelInData =
+        levelsPresent.length > 0 ? Math.max(...levelsPresent) : 1;
+      const nextLevel =
+        achievedLevel < maxLevelInData ? achievedLevel + 1 : null;
+      const gapToNext = nextLevel !== null ? nextLevel - achievedLevel : 0;
 
       const unansweredCount = compItems.filter(
         (i) => answers[i.item_id] === undefined
       ).length;
 
       const levelDef = model.meta.levels.find((l) => l.id === achievedLevel);
+      const axis = compAxisMap.get(comp.id) ?? comp.axis;
 
       return {
         competencyId: comp.id,
         competencyName: comp.name,
-        axis: comp.axis,
+        axis,
         achievedLevel,
         achievedLevelName: levelDef?.name ?? `Level ${achievedLevel}`,
+        nextLevel,
         avgPerLevel,
         sharePerLevel,
         unansweredCount,
@@ -84,9 +95,10 @@ export function calculateResults(
   );
 
   const axisScores: Record<string, AxisScore> = {};
-  for (const axis of model.meta.axes) {
-    const axisCompetencies = competencyResults.filter(
-      (cr) => cr.axis === axis
+  for (const axis of Object.keys(model.axisMapping)) {
+    const axisCompIds = new Set(model.axisMapping[axis]);
+    const axisCompetencies = competencyResults.filter((cr) =>
+      axisCompIds.has(cr.competencyId)
     );
     if (axisCompetencies.length === 0) continue;
 
@@ -144,4 +156,29 @@ export function getWeakestCompetencies(
       return b.unansweredCount - a.unansweredCount;
     })
     .slice(0, count);
+}
+
+export function calculateGaps(
+  selfResults: AssessmentResults,
+  externalResults: AssessmentResults,
+  externalRole: AssessorRole
+): CompetencyGap[] {
+  return selfResults.competencyResults.map((selfCr) => {
+    const extCr = externalResults.competencyResults.find(
+      (cr) => cr.competencyId === selfCr.competencyId
+    );
+    const externalLevel = extCr?.achievedLevel ?? selfCr.achievedLevel;
+    const delta = selfCr.achievedLevel - externalLevel;
+
+    return {
+      competencyId: selfCr.competencyId,
+      competencyName: selfCr.competencyName,
+      axis: selfCr.axis,
+      selfLevel: selfCr.achievedLevel,
+      externalLevel,
+      externalRole,
+      delta: Math.abs(delta),
+      direction: delta > 0 ? "over" : delta < 0 ? "under" : "match",
+    };
+  });
 }

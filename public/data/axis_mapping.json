@@ -1,0 +1,20 @@
+{
+  "Craft": [
+    "hard_problem_setting",
+    "hard_design",
+    "hard_execution",
+    "hard_analysis"
+  ],
+  "Impact": [
+    "hard_results",
+    "soft_briefing",
+    "soft_presentation",
+    "soft_colleagues",
+    "soft_leaders",
+    "soft_business"
+  ],
+  "Leadership": [
+    "soft_general",
+    "soft_researchers"
+  ]
+}

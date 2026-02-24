@@ -1,22 +1,35 @@
 import Papa from "papaparse";
-import type { ModelData, AssessmentItem, Competency, ModelMeta } from "@/types";
+import type {
+  ModelData,
+  AssessmentItem,
+  Competency,
+  ModelMeta,
+  AxisMapping,
+} from "@/types";
 
 interface RawModelJSON {
   meta: ModelMeta;
   competencies: Competency[];
 }
 
+let cachedModel: ModelData | null = null;
+
 export async function loadModel(): Promise<ModelData> {
-  const [modelRes, itemsRes] = await Promise.all([
+  if (cachedModel) return cachedModel;
+
+  const [modelRes, itemsRes, axisRes] = await Promise.all([
     fetch("/data/competency_model.json"),
     fetch("/data/assessment_items.csv"),
+    fetch("/data/axis_mapping.json"),
   ]);
 
   if (!modelRes.ok) throw new Error("Failed to load competency_model.json");
   if (!itemsRes.ok) throw new Error("Failed to load assessment_items.csv");
+  if (!axisRes.ok) throw new Error("Failed to load axis_mapping.json");
 
   const modelJson: RawModelJSON = await modelRes.json();
   const itemsCsv = await itemsRes.text();
+  const axisMapping: AxisMapping = await axisRes.json();
 
   const parsed = Papa.parse<Record<string, string>>(itemsCsv, {
     header: true,
@@ -29,7 +42,8 @@ export async function loadModel(): Promise<ModelData> {
   const items: AssessmentItem[] = parsed.data
     .filter((row) => {
       if (!row.item_id || row.item_id.startsWith("#")) return false;
-      if (!row.competency_id || !row.level_target || !row.statement) return false;
+      if (!row.competency_id || !row.level_target || !row.statement)
+        return false;
       return true;
     })
     .map((row) => ({
@@ -41,7 +55,7 @@ export async function loadModel(): Promise<ModelData> {
     .filter((item) => {
       if (!competencyIds.has(item.competency_id)) {
         console.warn(
-          `[data-loader] Unknown competency_id "${item.competency_id}" for item "${item.item_id}"`
+          `[data-loader] Unknown competency_id "${item.competency_id}" in CSV item "${item.item_id}"`
         );
         return false;
       }
@@ -54,9 +68,22 @@ export async function loadModel(): Promise<ModelData> {
       return true;
     });
 
-  return {
+  for (const [axis, ids] of Object.entries(axisMapping)) {
+    for (const id of ids) {
+      if (!competencyIds.has(id)) {
+        console.warn(
+          `[data-loader] axis_mapping "${axis}" references unknown competency "${id}"`
+        );
+      }
+    }
+  }
+
+  cachedModel = {
     meta: modelJson.meta,
     competencies: modelJson.competencies,
     items,
+    axisMapping,
   };
+
+  return cachedModel;
 }
