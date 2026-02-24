@@ -27,7 +27,7 @@ interface RadarChartProps {
 
 export default function RadarChartComponent({
   datasets,
-  maxLevel = 5,
+  maxLevel = 7,
 }: RadarChartProps) {
   if (datasets.length === 0) return null;
 

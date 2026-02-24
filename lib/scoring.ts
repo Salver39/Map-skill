@@ -65,10 +65,7 @@ export function calculateResults(
         }
       }
 
-      const maxLevelInData =
-        levelsPresent.length > 0 ? Math.max(...levelsPresent) : 1;
-      const nextLevel =
-        achievedLevel < maxLevelInData ? achievedLevel + 1 : null;
+      const nextLevel = achievedLevel < 7 ? achievedLevel + 1 : null;
       const gapToNext = nextLevel !== null ? nextLevel - achievedLevel : 0;
 
       const unansweredCount = compItems.filter(
@@ -108,7 +105,7 @@ export function calculateResults(
     axisScores[axis] = {
       axis,
       scoreFloat: Math.round(avg * 100) / 100,
-      level: Math.max(1, Math.min(5, Math.floor(avg))),
+      level: Math.max(1, Math.min(7, Math.floor(avg))),
       competencyCount: axisCompetencies.length,
     };
   }
@@ -117,7 +114,7 @@ export function calculateResults(
   const axisLevels = Object.values(axisScores).map((a) => a.level);
 
   if (axisLevels.length >= 3) {
-    for (let n = 5; n >= 1; n--) {
+    for (let n = 7; n >= 1; n--) {
       const countAtLeastN = axisLevels.filter((l) => l >= n).length;
       const noneBelowNMinus1 = axisLevels.every((l) => l >= n - 1);
 

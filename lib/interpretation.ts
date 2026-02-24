@@ -14,7 +14,16 @@ export function getInterpretation(
 
   const blocks: InterpretationBlock[] = [];
 
+  const allPrincipal = craft >= 6 && impact >= 6 && leadership >= 6;
   const allHigh = craft >= 4 && impact >= 4 && leadership >= 4;
+
+  if (allPrincipal) {
+    blocks.push({
+      title: "Лидер индустрии",
+      text: "Ваш профиль выходит за рамки организации. Вы формируете стандарты профессии, влияете на индустрию через публикации, выступления и менторство. Вы одновременно являетесь экспертом мирового уровня в методологии, стратегическим партнёром бизнеса и лидером профессионального сообщества.",
+    });
+    return blocks;
+  }
 
   if (allHigh) {
     blocks.push({

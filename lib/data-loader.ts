@@ -78,6 +78,14 @@ export async function loadModel(): Promise<ModelData> {
     }
   }
 
+  const hasLevel6 = items.some((i) => i.level_target === 6);
+  const hasLevel7 = items.some((i) => i.level_target === 7);
+  if (!hasLevel6 || !hasLevel7) {
+    console.warn(
+      `[data-loader] Assessment bank is missing items for level ${!hasLevel6 ? "6" : ""}${!hasLevel6 && !hasLevel7 ? " and " : ""}${!hasLevel7 ? "7" : ""}. Scoring above level 5 will not work correctly.`
+    );
+  }
+
   cachedModel = {
     meta: modelJson.meta,
     competencies: modelJson.competencies,
