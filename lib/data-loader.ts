@@ -33,8 +33,8 @@ export async function loadModel(): Promise<ModelData> {
 
   const parsed = Papa.parse<Record<string, string>>(itemsCsv, {
     header: true,
-    skipEmptyLines: "greedy",
-    dynamicTyping: false,
+    skipEmptyLines: true,
+    transform: (v) => v.trim(),
   });
 
   const competencyIds = new Set(modelJson.competencies.map((c) => c.id));
@@ -47,10 +47,10 @@ export async function loadModel(): Promise<ModelData> {
       return true;
     })
     .map((row) => ({
-      item_id: row.item_id.trim(),
-      competency_id: row.competency_id.trim(),
-      level_target: parseInt(row.level_target, 10),
-      statement: row.statement.trim(),
+      item_id: row.item_id,
+      competency_id: row.competency_id,
+      level_target: Number(row.level_target),
+      statement: row.statement,
     }))
     .filter((item) => {
       if (!competencyIds.has(item.competency_id)) {
@@ -59,7 +59,7 @@ export async function loadModel(): Promise<ModelData> {
         );
         return false;
       }
-      if (isNaN(item.level_target) || item.level_target < 1) {
+      if (!Number.isFinite(item.level_target) || item.level_target < 1) {
         console.warn(
           `[data-loader] Invalid level_target for item "${item.item_id}"`
         );
@@ -67,6 +67,23 @@ export async function loadModel(): Promise<ModelData> {
       }
       return true;
     });
+
+  if (items.length === 0) {
+    throw new Error("No assessment items loaded from assessment_items.csv");
+  }
+
+  const level6Count = items.filter((i) => i.level_target === 6).length;
+  const level7Count = items.filter((i) => i.level_target === 7).length;
+
+  console.log("[data-loader] Loaded assessment items:", items.length);
+  console.log("[data-loader] Items with level 6:", level6Count);
+  console.log("[data-loader] Items with level 7:", level7Count);
+
+  if (level6Count === 0 || level7Count === 0) {
+    throw new Error(
+      "No level 6/7 items found in assessment_items.csv"
+    );
+  }
 
   for (const [axis, ids] of Object.entries(axisMapping)) {
     for (const id of ids) {
@@ -76,14 +93,6 @@ export async function loadModel(): Promise<ModelData> {
         );
       }
     }
-  }
-
-  const hasLevel6 = items.some((i) => i.level_target === 6);
-  const hasLevel7 = items.some((i) => i.level_target === 7);
-  if (!hasLevel6 || !hasLevel7) {
-    console.warn(
-      `[data-loader] Assessment bank is missing items for level ${!hasLevel6 ? "6" : ""}${!hasLevel6 && !hasLevel7 ? " and " : ""}${!hasLevel7 ? "7" : ""}. Scoring above level 5 will not work correctly.`
-    );
   }
 
   cachedModel = {
