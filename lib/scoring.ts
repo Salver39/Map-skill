@@ -8,6 +8,7 @@ import type {
 } from "@/types";
 
 export interface ScoringOptions {
+  mode?: "full" | "adaptive";
   achievedLevelsOverride?: Record<string, number>;
 }
 

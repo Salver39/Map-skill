@@ -42,7 +42,13 @@ export default function ResultsPage() {
       const ap = roles[role].adaptiveProgress ?? {};
       const result: Record<string, number> = {};
       for (const [id, prog] of Object.entries(ap)) {
-        if (prog.finalized) result[id] = prog.achievedLevel;
+        if (prog.finalized) {
+          result[id] = prog.achievedLevel;
+        } else if (prog.passedLevels && prog.passedLevels.length > 0) {
+          result[id] = Math.max(...prog.passedLevels);
+        } else {
+          result[id] = 1;
+        }
       }
       return result;
     },
@@ -110,6 +116,7 @@ export default function ResultsPage() {
       const overrides = buildOverrides(role.id);
       const hasOverrides = Object.keys(overrides).length > 0;
       out[role.id] = calculateResults(model, ans, {
+        mode: hasOverrides ? "adaptive" : "full",
         achievedLevelsOverride: hasOverrides ? overrides : undefined,
       });
     }
