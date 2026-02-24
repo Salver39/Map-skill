@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { loadModel } from "@/lib/data-loader";
 import { useHydration } from "@/lib/useHydration";
@@ -36,6 +36,18 @@ export default function ResultsPage() {
   const sessionCode = useAssessmentStore((s) => s.sessionCode);
   const loadRoleAnswers = useAssessmentStore((s) => s.loadRoleAnswers);
   const resetAll = useAssessmentStore((s) => s.resetAll);
+
+  const buildOverrides = useCallback(
+    (role: AssessorRole): Record<string, number> => {
+      const ap = roles[role].adaptiveProgress ?? {};
+      const result: Record<string, number> = {};
+      for (const [id, prog] of Object.entries(ap)) {
+        if (prog.finalized) result[id] = prog.achievedLevel;
+      }
+      return result;
+    },
+    [roles]
+  );
 
   useEffect(() => {
     loadModel()
@@ -89,12 +101,21 @@ export default function ResultsPage() {
       return {} as Record<AssessorRole, AssessmentResults | null>;
     const out: Record<string, AssessmentResults | null> = {};
     for (const role of ASSESSOR_ROLES) {
-      const answers = mergedRoles[role.id];
-      const hasAnswers = Object.keys(answers).length > 0;
-      out[role.id] = hasAnswers ? calculateResults(model, answers) : null;
+      const ans = mergedRoles[role.id];
+      const hasAnswers = Object.keys(ans).length > 0;
+      if (!hasAnswers) {
+        out[role.id] = null;
+        continue;
+      }
+      const overrides = buildOverrides(role.id);
+      const hasOverrides = Object.keys(overrides).length > 0;
+      out[role.id] = calculateResults(model, ans, {
+        achievedLevelsOverride: hasOverrides ? overrides : undefined,
+      });
     }
     return out as Record<AssessorRole, AssessmentResults | null>;
-  }, [model, mergedRoles, hydrated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, mergedRoles, hydrated, buildOverrides]);
 
   const selfResults = roleResults.self ?? null;
 

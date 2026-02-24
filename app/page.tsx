@@ -33,7 +33,7 @@ export default function WelcomePage() {
     loadModel().then(setModel).catch(console.error);
   }, []);
 
-  const totalItems = model?.items.length ?? 192;
+  const totalCompetencies = model?.competencies.length ?? 12;
 
   const anyProgress =
     hydrated &&
@@ -223,8 +223,8 @@ export default function WelcomePage() {
         {/* Info card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-            <span className="px-2.5 py-1 bg-gray-100 rounded-lg">
-              192 утверждения
+            <span className="px-2.5 py-1 bg-brand-50 text-brand-700 rounded-lg font-medium">
+              Адаптивный режим
             </span>
             <span className="px-2.5 py-1 bg-gray-100 rounded-lg">
               12 компетенций
@@ -233,7 +233,7 @@ export default function WelcomePage() {
               3 оси
             </span>
             <span className="px-2.5 py-1 bg-gray-100 rounded-lg">
-              ~25 мин на роль
+              ~5–10 мин на роль
             </span>
           </div>
         </div>
@@ -245,12 +245,18 @@ export default function WelcomePage() {
           </h3>
           {ASSESSOR_ROLES.map((roleInfo) => {
             const roleState = hydrated ? roles[roleInfo.id] : null;
+            const ap = roleState?.adaptiveProgress ?? {};
+            const finCount = Object.values(ap).filter(
+              (p) => p.finalized
+            ).length;
             const answered = roleState
               ? Object.keys(roleState.answers).length
               : 0;
             const percent =
-              totalItems > 0 ? Math.round((answered / totalItems) * 100) : 0;
-            const isComplete = percent === 100;
+              totalCompetencies > 0
+                ? Math.round((finCount / totalCompetencies) * 100)
+                : 0;
+            const isComplete = finCount === totalCompetencies;
             const hasData = answered > 0;
 
             return (

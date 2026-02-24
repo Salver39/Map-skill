@@ -7,10 +7,16 @@ import type {
   AssessorRole,
 } from "@/types";
 
+export interface ScoringOptions {
+  achievedLevelsOverride?: Record<string, number>;
+}
+
 export function calculateResults(
   model: ModelData,
-  answers: Record<string, number>
+  answers: Record<string, number>,
+  options?: ScoringOptions
 ): AssessmentResults {
+  const override = options?.achievedLevelsOverride ?? {};
   const totalItems = model.items.length;
   const totalAnswered = model.items.filter(
     (i) => answers[i.item_id] !== undefined
@@ -65,22 +71,25 @@ export function calculateResults(
         }
       }
 
-      const nextLevel = achievedLevel < 7 ? achievedLevel + 1 : null;
-      const gapToNext = nextLevel !== null ? nextLevel - achievedLevel : 0;
+      const finalLevel =
+        override[comp.id] !== undefined ? override[comp.id] : achievedLevel;
+
+      const nextLevel = finalLevel < 7 ? finalLevel + 1 : null;
+      const gapToNext = nextLevel !== null ? nextLevel - finalLevel : 0;
 
       const unansweredCount = compItems.filter(
         (i) => answers[i.item_id] === undefined
       ).length;
 
-      const levelDef = model.meta.levels.find((l) => l.id === achievedLevel);
+      const levelDef = model.meta.levels.find((l) => l.id === finalLevel);
       const axis = compAxisMap.get(comp.id) ?? comp.axis;
 
       return {
         competencyId: comp.id,
         competencyName: comp.name,
         axis,
-        achievedLevel,
-        achievedLevelName: levelDef?.name ?? `Level ${achievedLevel}`,
+        achievedLevel: finalLevel,
+        achievedLevelName: levelDef?.name ?? `Level ${finalLevel}`,
         nextLevel,
         avgPerLevel,
         sharePerLevel,
