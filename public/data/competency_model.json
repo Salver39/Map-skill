@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "version": "1.0",
+    "levels": [
+      { "id": 1, "name": "Intern" },
+      { "id": 2, "name": "Junior" },
+      { "id": 3, "name": "Researcher" },
+      { "id": 4, "name": "Senior" },
+      { "id": 5, "name": "Lead" },
+      { "id": 6, "name": "Principal" },
+      { "id": 7, "name": "Community Lead" }
+    ],
+    "axes": ["Craft", "Impact", "Leadership"]
+  },
+  "competencies": [
+    {
+      "id": "hard_problem_setting",
+      "name": "Постановка задачи",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
+      "id": "hard_design",
+      "name": "Дизайн исследования",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
+      "id": "hard_execution",
+      "name": "Проведение исследования",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
+      "id": "hard_analysis",
+      "name": "Анализ данных",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
+      "id": "hard_results",
+      "name": "Работа с результатами",
+      "axis": "Impact",
+      "levels": {}
+    },
+    {
+      "id": "soft_briefing",
+      "name": "Брифинг",
+      "axis": "Impact",
+      "levels": {}
+    },
+    {
+      "id": "soft_presentation",
+      "name": "Презентация",
+      "axis": "Impact",
+      "levels": {}
+    },
+    {
+      "id": "soft_general",
+      "name": "Общие навыки",
+      "axis": "Leadership",
+      "levels": {}
+    },
+    {
+      "id": "soft_researchers",
+      "name": "Коммуникация с исследователями",
+      "axis": "Leadership",
+      "levels": {}
+    },
+    {
+      "id": "soft_colleagues",
+      "name": "Коммуникация с коллегами",
+      "axis": "Impact",
+      "levels": {}
+    },
+    {
+      "id": "soft_leaders",
+      "name": "Коммуникация с лидерами",
+      "axis": "Impact",
+      "levels": {}
+    },
+    {
+      "id": "soft_business",
+      "name": "Коммуникация с бизнесом",
+      "axis": "Impact",
+      "levels": {}
+    }
+  ]
+}
