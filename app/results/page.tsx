@@ -85,8 +85,7 @@ export default function ResultsPage() {
     return merged;
   }, [roles, remoteAnswers]);
 
-  // TODO: wire profile selection from UI (e.g. toggle or URL param)
-  const profile: "ux" | "cx" = "ux";
+  const profile = useAssessmentStore((s) => s.profile);
 
   const roleResults = useMemo(() => {
     if (!model || !hydrated)

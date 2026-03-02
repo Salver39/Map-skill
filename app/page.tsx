@@ -20,8 +20,10 @@ export default function WelcomePage() {
   const [showJoin, setShowJoin] = useState(false);
 
   const roles = useAssessmentStore((s) => s.roles);
+  const profile = useAssessmentStore((s) => s.profile);
   const sessionCode = useAssessmentStore((s) => s.sessionCode);
   const setActiveRole = useAssessmentStore((s) => s.setActiveRole);
+  const setProfile = useAssessmentStore((s) => s.setProfile);
   const setSessionCode = useAssessmentStore((s) => s.setSessionCode);
   const loadRoleAnswers = useAssessmentStore((s) => s.loadRoleAnswers);
   const resetAll = useAssessmentStore((s) => s.resetAll);
@@ -217,6 +219,51 @@ export default function WelcomePage() {
             {joinError && (
               <p className="mt-2 text-sm text-red-600">{joinError}</p>
             )}
+          </div>
+        )}
+
+        {/* Profile selector */}
+        {hydrated && (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-4">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              Профиль исследователя
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setProfile("ux")}
+                className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  profile === "ux"
+                    ? "bg-brand-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <span className="block text-[15px]">UX Research</span>
+                <span
+                  className={`block text-xs mt-0.5 font-normal ${
+                    profile === "ux" ? "text-brand-200" : "text-gray-400"
+                  }`}
+                >
+                  Quant влияет на итог
+                </span>
+              </button>
+              <button
+                onClick={() => setProfile("cx")}
+                className={`flex-1 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  profile === "cx"
+                    ? "bg-brand-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <span className="block text-[15px]">CX Research</span>
+                <span
+                  className={`block text-xs mt-0.5 font-normal ${
+                    profile === "cx" ? "text-brand-200" : "text-gray-400"
+                  }`}
+                >
+                  Без Execution в итоге
+                </span>
+              </button>
+            </div>
           </div>
         )}
 

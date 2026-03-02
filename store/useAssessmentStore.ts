@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { AssessorRole } from "@/types";
+import type { ResearcherProfile } from "@/lib/scoring";
 
 interface RoleState {
   answers: Record<string, number>;
@@ -18,10 +19,12 @@ const emptyRoleState = (): RoleState => ({
 
 interface AssessmentState {
   activeRole: AssessorRole;
+  profile: ResearcherProfile;
   roles: Record<AssessorRole, RoleState>;
   sessionCode: string | null;
 
   setActiveRole: (role: AssessorRole) => void;
+  setProfile: (profile: ResearcherProfile) => void;
   setSessionCode: (code: string | null) => void;
   setAnswer: (itemId: string, value: number) => void;
   setCompetencyIndex: (index: number) => void;
@@ -40,6 +43,7 @@ export const useAssessmentStore = create<AssessmentState>()(
   persist(
     (set) => ({
       activeRole: "self",
+      profile: "ux",
       sessionCode: null,
       roles: {
         self: emptyRoleState(),
@@ -48,6 +52,8 @@ export const useAssessmentStore = create<AssessmentState>()(
       },
 
       setActiveRole: (role) => set({ activeRole: role }),
+
+      setProfile: (profile) => set({ profile }),
 
       setSessionCode: (code) => set({ sessionCode: code }),
 
@@ -124,6 +130,7 @@ export const useAssessmentStore = create<AssessmentState>()(
       resetAll: () =>
         set({
           activeRole: "self",
+          profile: "ux",
           sessionCode: null,
           roles: {
             self: emptyRoleState(),
@@ -151,6 +158,7 @@ export const useAssessmentStore = create<AssessmentState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         activeRole: state.activeRole,
+        profile: state.profile,
         sessionCode: state.sessionCode,
         roles: state.roles,
       }),
