@@ -12,6 +12,7 @@ import {
   calculateGaps,
 } from "@/lib/scoring";
 import { getInterpretation, getDevelopmentFocus } from "@/lib/interpretation";
+import { getLowItems } from "@/lib/lowItems";
 import RadarChart from "@/components/RadarChart";
 import type { RadarDataset } from "@/components/RadarChart";
 import CompetencyTable from "@/components/CompetencyTable";
@@ -225,6 +226,8 @@ export default function ResultsPage() {
     Impact: "bg-emerald-500",
     Leadership: "bg-purple-500",
   };
+
+  const lowItems = getLowItems(model, mergedRoles[primaryRole], 4);
 
   const additionalTableCols = externalRoles
     .filter((r) => roleResults[r.id] !== null)
@@ -558,6 +561,40 @@ export default function ResultsPage() {
             ))}
           </div>
         </div>
+
+        {/* Low Items */}
+        {lowItems.length > 0 && (
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              Утверждения ниже 4
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Показаны ответы 1–3. Пропуски не включены.
+            </p>
+
+            <div className="space-y-3">
+              {lowItems.map((item) => (
+                <div
+                  key={item.item_id}
+                  className="p-4 rounded-xl bg-gray-50 border border-gray-100"
+                >
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="text-xs text-gray-500 font-mono">
+                      {item.item_id} • {item.axis} • {item.competency_id} • L{item.level_target}
+                    </div>
+                    <div className="text-sm font-bold text-red-600 tabular-nums">
+                      {item.score}
+                    </div>
+                  </div>
+
+                  <div className="text-sm text-gray-800 leading-relaxed">
+                    {item.statement}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
