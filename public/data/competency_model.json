@@ -2,13 +2,11 @@
   "meta": {
     "version": "1.0",
     "levels": [
-      { "id": 1, "name": "Intern" },
-      { "id": 2, "name": "Junior" },
-      { "id": 3, "name": "Researcher" },
-      { "id": 4, "name": "Senior" },
-      { "id": 5, "name": "Lead" },
-      { "id": 6, "name": "Principal" },
-      { "id": 7, "name": "Community Lead" }
+      { "id": 1, "name": "Junior" },
+      { "id": 2, "name": "Researcher" },
+      { "id": 3, "name": "Senior" },
+      { "id": 4, "name": "Lead" },
+      { "id": 5, "name": "Principal" }
     ],
     "axes": ["Craft", "Impact", "Leadership"]
   },
@@ -38,14 +36,14 @@
       "levels": {}
     },
     {
-      "id": "hard_results",
-      "name": "Работа с результатами",
-      "axis": "Impact",
+      "id": "soft_briefing",
+      "name": "Брифинг",
+      "axis": "Craft",
       "levels": {}
     },
     {
-      "id": "soft_briefing",
-      "name": "Брифинг",
+      "id": "hard_results",
+      "name": "Работа с результатами",
       "axis": "Impact",
       "levels": {}
     },
@@ -53,12 +51,6 @@
       "id": "soft_presentation",
       "name": "Презентация",
       "axis": "Impact",
-      "levels": {}
-    },
-    {
-      "id": "soft_general",
-      "name": "Общие навыки",
-      "axis": "Leadership",
       "levels": {}
     },
     {
@@ -70,19 +62,19 @@
     {
       "id": "soft_colleagues",
       "name": "Коммуникация с коллегами",
-      "axis": "Impact",
+      "axis": "Leadership",
       "levels": {}
     },
     {
       "id": "soft_leaders",
       "name": "Коммуникация с лидерами",
-      "axis": "Impact",
+      "axis": "Leadership",
       "levels": {}
     },
     {
       "id": "soft_business",
       "name": "Коммуникация с бизнесом",
-      "axis": "Impact",
+      "axis": "Leadership",
       "levels": {}
     }
   ]
