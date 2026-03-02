@@ -34,6 +34,9 @@ export function calculateResults(
         new Set(compItems.map((i) => i.level_target))
       ).sort((a, b) => a - b);
 
+      const axis = compAxisMap.get(comp.id) ?? comp.axis;
+      const isLeadership = axis === "Leadership";
+
       let achievedLevel = 1;
       const avgPerLevel: Record<number, number> = {};
       const sharePerLevel: Record<number, number> = {};
@@ -55,12 +58,19 @@ export function calculateResults(
         const avg =
           answeredAtLevel.reduce((a, b) => a + b, 0) / answeredAtLevel.length;
         const highCount = answeredAtLevel.filter((a) => a >= 4).length;
-        const share = highCount / itemsAtLevel.length;
+        const share = highCount / answeredAtLevel.length;
 
         avgPerLevel[level] = Math.round(avg * 100) / 100;
         sharePerLevel[level] = Math.round(share * 100) / 100;
 
-        if (avg >= 4 && share >= 0.6) {
+        // Pass rules (skips ignored — only answered items count):
+        // Leadership: strict — every answered item must be >=4
+        // Craft/Impact: >=70% of answered items must be >=4
+        const passed = isLeadership
+          ? answeredAtLevel.every((a) => a >= 4)
+          : share >= 0.7;
+
+        if (passed) {
           achievedLevel = level;
         }
       }
@@ -73,7 +83,6 @@ export function calculateResults(
       ).length;
 
       const levelDef = model.meta.levels.find((l) => l.id === achievedLevel);
-      const axis = compAxisMap.get(comp.id) ?? comp.axis;
 
       return {
         competencyId: comp.id,
