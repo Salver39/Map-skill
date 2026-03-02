@@ -385,7 +385,7 @@ export default function ResultsPage() {
                     className={`h-full rounded-full transition-all ${
                       axisBarColor[axis.axis] ?? "bg-brand-500"
                     }`}
-                    style={{ width: `${(axis.scoreFloat / 7) * 100}%` }}
+                    style={{ width: `${(axis.scoreFloat / 5) * 100}%` }}
                   />
                 </div>
                 {externalRoles.length > 0 && (

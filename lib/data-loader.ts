@@ -72,18 +72,7 @@ export async function loadModel(): Promise<ModelData> {
     throw new Error("No assessment items loaded from assessment_items.csv");
   }
 
-  const level6Count = items.filter((i) => i.level_target === 6).length;
-  const level7Count = items.filter((i) => i.level_target === 7).length;
-
   console.log("[data-loader] Loaded assessment items:", items.length);
-  console.log("[data-loader] Items with level 6:", level6Count);
-  console.log("[data-loader] Items with level 7:", level7Count);
-
-  if (level6Count === 0 || level7Count === 0) {
-    throw new Error(
-      "No level 6/7 items found in assessment_items.csv"
-    );
-  }
 
   for (const [axis, ids] of Object.entries(axisMapping)) {
     for (const id of ids) {

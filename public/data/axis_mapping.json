@@ -3,18 +3,17 @@
     "hard_problem_setting",
     "hard_design",
     "hard_execution",
-    "hard_analysis"
+    "hard_analysis",
+    "soft_briefing"
   ],
   "Impact": [
     "hard_results",
-    "soft_briefing",
-    "soft_presentation",
-    "soft_colleagues",
-    "soft_leaders",
-    "soft_business"
+    "soft_presentation"
   ],
   "Leadership": [
-    "soft_general",
-    "soft_researchers"
+    "soft_business",
+    "soft_leaders",
+    "soft_researchers",
+    "soft_colleagues"
   ]
 }
