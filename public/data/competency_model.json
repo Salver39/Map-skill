@@ -43,13 +43,13 @@
     },
     {
       "id": "hard_quant_design",
-      "name": "Quantitative Research Design",
+      "name": "Дизайн опроса",
       "axis": "Craft",
       "levels": {}
     },
     {
       "id": "hard_quant_analysis",
-      "name": "Quantitative Data Analysis",
+      "name": "Анализ опроса",
       "axis": "Craft",
       "levels": {}
     },
