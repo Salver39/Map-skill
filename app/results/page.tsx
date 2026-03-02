@@ -85,6 +85,9 @@ export default function ResultsPage() {
     return merged;
   }, [roles, remoteAnswers]);
 
+  // TODO: wire profile selection from UI (e.g. toggle or URL param)
+  const profile: "ux" | "cx" = "ux";
+
   const roleResults = useMemo(() => {
     if (!model || !hydrated)
       return {} as Record<AssessorRole, AssessmentResults | null>;
@@ -92,10 +95,12 @@ export default function ResultsPage() {
     for (const role of ASSESSOR_ROLES) {
       const answers = mergedRoles[role.id];
       const hasAnswers = Object.keys(answers).length > 0;
-      out[role.id] = hasAnswers ? calculateResults(model, answers) : null;
+      out[role.id] = hasAnswers
+        ? calculateResults(model, answers, { profile })
+        : null;
     }
     return out as Record<AssessorRole, AssessmentResults | null>;
-  }, [model, mergedRoles, hydrated]);
+  }, [model, mergedRoles, hydrated, profile]);
 
   const selfResults = roleResults.self ?? null;
 

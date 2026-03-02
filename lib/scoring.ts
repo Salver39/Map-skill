@@ -7,10 +7,20 @@ import type {
   AssessorRole,
 } from "@/types";
 
+export type ResearcherProfile = "ux" | "cx";
+
+export interface ScoringOptions {
+  profile?: ResearcherProfile;
+}
+
+const QUANT_IDS = new Set(["hard_quant_design", "hard_quant_analysis"]);
+
 export function calculateResults(
   model: ModelData,
-  answers: Record<string, number>
+  answers: Record<string, number>,
+  options?: ScoringOptions
 ): AssessmentResults {
+  const profile: ResearcherProfile = options?.profile ?? "ux";
   const totalItems = model.items.length;
   const totalAnswered = model.items.filter(
     (i) => answers[i.item_id] !== undefined
@@ -100,11 +110,31 @@ export function calculateResults(
     }
   );
 
+  // Profile-specific aggregation gating:
+  // Compute quantLevel (min of quant competencies) for UX profile rules
+  const quantResults = competencyResults.filter((cr) =>
+    QUANT_IDS.has(cr.competencyId)
+  );
+  const quantLevel =
+    quantResults.length > 0
+      ? Math.min(...quantResults.map((cr) => cr.achievedLevel))
+      : null;
+
+  // Determines whether a competency participates in axis/overall aggregation.
+  // Per-competency scoring (achievedLevel) is unaffected.
+  const includeInAggregation = (cr: CompetencyResult): boolean => {
+    if (profile === "cx" && cr.competencyId === "hard_execution") return false;
+    if (profile === "ux" && QUANT_IDS.has(cr.competencyId)) {
+      return quantLevel !== 2;
+    }
+    return true;
+  };
+
   const axisScores: Record<string, AxisScore> = {};
   for (const axis of Object.keys(model.axisMapping)) {
     const axisCompIds = new Set(model.axisMapping[axis]);
-    const axisCompetencies = competencyResults.filter((cr) =>
-      axisCompIds.has(cr.competencyId)
+    const axisCompetencies = competencyResults.filter(
+      (cr) => axisCompIds.has(cr.competencyId) && includeInAggregation(cr)
     );
     if (axisCompetencies.length === 0) continue;
 
@@ -132,6 +162,11 @@ export function calculateResults(
         break;
       }
     }
+  }
+
+  // UX hard cap: quant at level 1 caps overall to max 2
+  if (profile === "ux" && quantLevel === 1) {
+    overallLevel = Math.min(overallLevel, 2);
   }
 
   const overallLevelDef = model.meta.levels.find(
