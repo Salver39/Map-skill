@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { loadModel } from "@/lib/data-loader";
 import { useHydration } from "@/lib/useHydration";
@@ -36,24 +36,6 @@ export default function ResultsPage() {
   const sessionCode = useAssessmentStore((s) => s.sessionCode);
   const loadRoleAnswers = useAssessmentStore((s) => s.loadRoleAnswers);
   const resetAll = useAssessmentStore((s) => s.resetAll);
-
-  const buildOverrides = useCallback(
-    (role: AssessorRole): Record<string, number> => {
-      const ap = roles[role].adaptiveProgress ?? {};
-      const result: Record<string, number> = {};
-      for (const [id, prog] of Object.entries(ap)) {
-        if (prog.finalized) {
-          result[id] = prog.achievedLevel;
-        } else if (prog.passedLevels && prog.passedLevels.length > 0) {
-          result[id] = Math.max(...prog.passedLevels);
-        } else {
-          result[id] = 1;
-        }
-      }
-      return result;
-    },
-    [roles]
-  );
 
   useEffect(() => {
     loadModel()
@@ -107,22 +89,12 @@ export default function ResultsPage() {
       return {} as Record<AssessorRole, AssessmentResults | null>;
     const out: Record<string, AssessmentResults | null> = {};
     for (const role of ASSESSOR_ROLES) {
-      const ans = mergedRoles[role.id];
-      const hasAnswers = Object.keys(ans).length > 0;
-      if (!hasAnswers) {
-        out[role.id] = null;
-        continue;
-      }
-      const overrides = buildOverrides(role.id);
-      const hasOverrides = Object.keys(overrides).length > 0;
-      out[role.id] = calculateResults(model, ans, {
-        mode: hasOverrides ? "adaptive" : "full",
-        achievedLevelsOverride: hasOverrides ? overrides : undefined,
-      });
+      const answers = mergedRoles[role.id];
+      const hasAnswers = Object.keys(answers).length > 0;
+      out[role.id] = hasAnswers ? calculateResults(model, answers) : null;
     }
     return out as Record<AssessorRole, AssessmentResults | null>;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, mergedRoles, hydrated, buildOverrides]);
+  }, [model, mergedRoles, hydrated]);
 
   const selfResults = roleResults.self ?? null;
 

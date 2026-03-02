@@ -1,14 +1,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { AssessorRole } from "@/types";
-import type { CompetencyProgress } from "@/lib/adaptive";
 
 interface RoleState {
   answers: Record<string, number>;
   currentCompetencyIndex: number;
   startedAt: string | null;
   lastUpdatedAt: string | null;
-  adaptiveProgress: Record<string, CompetencyProgress>;
 }
 
 const emptyRoleState = (): RoleState => ({
@@ -16,7 +14,6 @@ const emptyRoleState = (): RoleState => ({
   currentCompetencyIndex: 0,
   startedAt: null,
   lastUpdatedAt: null,
-  adaptiveProgress: {},
 });
 
 interface AssessmentState {
@@ -37,20 +34,11 @@ interface AssessmentState {
     answers: Record<string, number>,
     competencyIndex: number
   ) => void;
-
-  setAdaptiveProgress: (
-    competencyId: string,
-    progress: CompetencyProgress
-  ) => void;
-  getAdaptiveProgress: (
-    competencyId: string
-  ) => CompetencyProgress | undefined;
-  getAchievedLevels: () => Record<string, number>;
 }
 
 export const useAssessmentStore = create<AssessmentState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       activeRole: "self",
       sessionCode: null,
       roles: {
@@ -152,52 +140,14 @@ export const useAssessmentStore = create<AssessmentState>()(
               ...state.roles[role],
               answers,
               currentCompetencyIndex: competencyIndex,
-              startedAt:
-                state.roles[role].startedAt || new Date().toISOString(),
+              startedAt: state.roles[role].startedAt || new Date().toISOString(),
               lastUpdatedAt: new Date().toISOString(),
             },
           },
         })),
-
-      setAdaptiveProgress: (competencyId, progress) =>
-        set((state) => {
-          const role = state.activeRole;
-          const roleState = state.roles[role];
-          return {
-            roles: {
-              ...state.roles,
-              [role]: {
-                ...roleState,
-                adaptiveProgress: {
-                  ...(roleState.adaptiveProgress ?? {}),
-                  [competencyId]: progress,
-                },
-              },
-            },
-          };
-        }),
-
-      getAdaptiveProgress: (competencyId) => {
-        const state = get();
-        const roleState = state.roles[state.activeRole];
-        return roleState.adaptiveProgress?.[competencyId];
-      },
-
-      getAchievedLevels: () => {
-        const state = get();
-        const roleState = state.roles[state.activeRole];
-        const ap = roleState.adaptiveProgress ?? {};
-        const result: Record<string, number> = {};
-        for (const [id, prog] of Object.entries(ap)) {
-          if (prog.finalized) {
-            result[id] = prog.achievedLevel;
-          }
-        }
-        return result;
-      },
     }),
     {
-      name: "uxcx-assessment:v4",
+      name: "uxcx-assessment:v3",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         activeRole: state.activeRole,
