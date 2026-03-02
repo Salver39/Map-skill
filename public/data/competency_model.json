@@ -42,6 +42,18 @@
       "levels": {}
     },
     {
+      "id": "hard_quant_design",
+      "name": "Quantitative Research Design",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
+      "id": "hard_quant_analysis",
+      "name": "Quantitative Data Analysis",
+      "axis": "Craft",
+      "levels": {}
+    },
+    {
       "id": "hard_results",
       "name": "Работа с результатами",
       "axis": "Impact",

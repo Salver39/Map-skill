@@ -4,7 +4,9 @@
     "hard_design",
     "hard_execution",
     "hard_analysis",
-    "soft_briefing"
+    "soft_briefing",
+    "hard_quant_design",
+    "hard_quant_analysis"
   ],
   "Impact": [
     "hard_results",
