@@ -130,6 +130,19 @@ export function calculateResults(
     return true;
   };
 
+  // Compute data ceiling per axis: max level_target available in items
+  const axisCeiling: Record<string, number> = {};
+  for (const axis of Object.keys(model.axisMapping)) {
+    const axisCompIds = new Set(model.axisMapping[axis]);
+    const axisItems = model.items.filter((i) =>
+      axisCompIds.has(i.competency_id)
+    );
+    axisCeiling[axis] =
+      axisItems.length > 0
+        ? Math.max(...axisItems.map((i) => i.level_target))
+        : 5;
+  }
+
   const axisScores: Record<string, AxisScore> = {};
   for (const axis of Object.keys(model.axisMapping)) {
     const axisCompIds = new Set(model.axisMapping[axis]);
@@ -149,13 +162,26 @@ export function calculateResults(
     };
   }
 
-  let overallLevel = 1;
-  const axisLevels = Object.values(axisScores).map((a) => a.level);
+  // For overall level: if an axis reached its data ceiling, don't let it
+  // hold back overall — promote it to the highest axis level in the set.
+  const rawAxisLevels = Object.values(axisScores).map((a) => a.level);
+  const maxAxisLevel =
+    rawAxisLevels.length > 0 ? Math.max(...rawAxisLevels) : 1;
 
-  if (axisLevels.length >= 3) {
+  const effectiveAxisLevels = Object.values(axisScores).map((a) => {
+    const ceiling = axisCeiling[a.axis] ?? 5;
+    if (a.level >= ceiling) return Math.max(a.level, maxAxisLevel);
+    return a.level;
+  });
+
+  let overallLevel = 1;
+
+  if (effectiveAxisLevels.length >= 3) {
     for (let n = 5; n >= 1; n--) {
-      const countAtLeastN = axisLevels.filter((l) => l >= n).length;
-      const noneBelowNMinus1 = axisLevels.every((l) => l >= n - 1);
+      const countAtLeastN = effectiveAxisLevels.filter((l) => l >= n).length;
+      const noneBelowNMinus1 = effectiveAxisLevels.every(
+        (l) => l >= n - 1
+      );
 
       if (countAtLeastN >= 2 && noneBelowNMinus1) {
         overallLevel = n;
