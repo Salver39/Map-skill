@@ -9,7 +9,6 @@ import { useAssessmentStore } from "@/store/useAssessmentStore";
 import { getRoleInfo } from "@/types";
 import QuestionCard from "@/components/QuestionCard";
 import ProgressBar from "@/components/ProgressBar";
-import { adaptStatement } from "@/lib/adaptStatement";
 import type { ModelData } from "@/types";
 
 export default function AssessmentPage() {
@@ -224,7 +223,7 @@ export default function AssessmentPage() {
             <QuestionCard
               key={item.item_id}
               itemId={item.item_id}
-              statement={adaptStatement(item.statement, activeRole)}
+              statement={item.statement}
               levelTarget={item.level_target}
               value={answers[item.item_id]}
               index={idx + 1}
