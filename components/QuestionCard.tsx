@@ -23,7 +23,7 @@ export default function QuestionCard({
     <div
       className={`
         p-4 sm:p-5 rounded-2xl border transition-colors duration-150
-        ${value !== undefined ? "border-brand-200 bg-brand-50/30" : "border-gray-200 bg-white"}
+        ${value === 0 ? "border-gray-300 bg-gray-50/50" : value !== undefined ? "border-brand-200 bg-brand-50/30" : "border-gray-200 bg-white"}
       `}
     >
       <div className="flex items-start gap-3 sm:gap-4">

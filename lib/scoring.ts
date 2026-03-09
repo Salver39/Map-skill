@@ -11,6 +11,7 @@ export type ResearcherProfile = "ux" | "cx";
 
 export interface ScoringOptions {
   profile?: ResearcherProfile;
+  role?: AssessorRole;
 }
 
 const QUANT_IDS = new Set(["hard_quant_design", "hard_quant_analysis"]);
@@ -21,6 +22,8 @@ export function calculateResults(
   options?: ScoringOptions
 ): AssessmentResults {
   const profile: ResearcherProfile = options?.profile ?? "ux";
+  const role: AssessorRole = options?.role ?? "self";
+  const isExternal = role === "team_lead" || role === "product_lead";
   const totalItems = model.items.length;
   const totalAnswered = model.items.filter(
     (i) => answers[i.item_id] !== undefined
@@ -55,9 +58,15 @@ export function calculateResults(
         const itemsAtLevel = compItems.filter(
           (i) => i.level_target === level
         );
-        const answeredAtLevel = itemsAtLevel
+        const rawAnswers = itemsAtLevel
           .map((i) => answers[i.item_id])
           .filter((a): a is number => a !== undefined);
+
+        // External roles: "can't evaluate" (0) is excluded entirely.
+        // Self: 0 stays in the array and counts as a failing score.
+        const answeredAtLevel = isExternal
+          ? rawAnswers.filter((a) => a !== 0)
+          : rawAnswers;
 
         if (answeredAtLevel.length === 0) {
           avgPerLevel[level] = 0;

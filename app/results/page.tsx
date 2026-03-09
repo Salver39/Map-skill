@@ -92,7 +92,7 @@ export default function ResultsPage() {
       const answers = mergedRoles[role.id];
       const hasAnswers = Object.keys(answers).length > 0;
       out[role.id] = hasAnswers
-        ? calculateResults(model, answers, { profile })
+        ? calculateResults(model, answers, { profile, role: role.id })
         : null;
     }
     return out as Record<AssessorRole, AssessmentResults | null>;
