@@ -85,7 +85,13 @@ export function calculateResults(
         }
       }
 
-      const nextLevel = achievedLevel < 5 ? achievedLevel + 1 : null;
+      const maxLevelInData =
+        levelsPresent.length > 0
+          ? levelsPresent[levelsPresent.length - 1]
+          : achievedLevel;
+      const atCeiling = achievedLevel >= maxLevelInData;
+      const nextLevel =
+        atCeiling || achievedLevel >= 5 ? null : achievedLevel + 1;
       const gapToNext = nextLevel !== null ? nextLevel - achievedLevel : 0;
 
       const unansweredCount = compItems.filter(
