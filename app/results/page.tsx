@@ -6,12 +6,8 @@ import { loadModel } from "@/lib/data-loader";
 import { useHydration } from "@/lib/useHydration";
 import { useAssessmentStore } from "@/store/useAssessmentStore";
 import { loadSessionResponses } from "@/lib/session";
-import {
-  calculateResults,
-  getWeakestCompetencies,
-  calculateGaps,
-} from "@/lib/scoring";
-import { getInterpretation, getDevelopmentFocus } from "@/lib/interpretation";
+import { calculateResults, calculateGaps } from "@/lib/scoring";
+import { getInterpretation } from "@/lib/interpretation";
 import { getLowItems } from "@/lib/lowItems";
 import RadarChart from "@/components/RadarChart";
 import type { RadarDataset } from "@/components/RadarChart";
@@ -23,6 +19,7 @@ import type {
   AssessmentResults,
   AssessorRole,
   CompetencyGap,
+  CompetencyResult,
 } from "@/types";
 
 export default function ResultsPage() {
@@ -146,14 +143,6 @@ export default function ResultsPage() {
     return getInterpretation(selfResults);
   }, [selfResults]);
 
-  const developmentPlan = useMemo(() => {
-    if (!model || !selfResults) return [];
-    return Object.keys(model.axisMapping).map((axis) => ({
-      axis,
-      weakest: getWeakestCompetencies(selfResults, axis, 2),
-    }));
-  }, [model, selfResults]);
-
   const handleExportJSON = () => {
     if (!model) return;
     const exportData = {
@@ -218,6 +207,12 @@ export default function ResultsPage() {
     selfResults !== null ? ("self" as AssessorRole) : filledRoles[0].id;
   const primaryResults = roleResults[primaryRole]!;
   const primaryInfo = getRoleInfo(primaryRole);
+
+  const sorted = [...primaryResults.competencyResults].sort(
+    (a, b) => b.achievedLevel - a.achievedLevel
+  );
+  const strengths = sorted.slice(0, 4);
+  const weaknesses = sorted.slice(-4).reverse();
 
   const axisLabelsRu: Record<string, string> = {
     Craft: "Методология",
@@ -508,61 +503,84 @@ export default function ResultsPage() {
           />
         </div>
 
-        {/* Development Plan */}
+        {/* Profile: Strengths & Weaknesses */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 sm:p-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-6">
-            План развития
+            Ваш профиль
           </h2>
-          <div className="space-y-6">
-            {developmentPlan.map(({ axis, weakest }) => (
-              <div key={axis}>
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <span
-                    className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      axis === "Craft"
-                        ? "bg-blue-100 text-blue-700"
-                        : axis === "Impact"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-purple-100 text-purple-700"
-                    }`}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold text-emerald-700 mb-3 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 text-xs">
+                  &#x2191;
+                </span>
+                Сильные стороны
+              </h3>
+              <div className="space-y-2.5">
+                {strengths.map((comp) => (
+                  <div
+                    key={comp.competencyId}
+                    className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100"
                   >
-                    {axis}
-                  </span>
-                  <span className="text-sm text-gray-500 font-normal">
-                    {axisLabelsRu[axis]}
-                  </span>
-                </h3>
-                {weakest.length === 0 ? (
-                  <p className="text-sm text-gray-400">
-                    Нет данных для рекомендаций
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {weakest.map((comp) => (
-                      <div
-                        key={comp.competencyId}
-                        className="p-4 rounded-xl bg-gray-50 border border-gray-100"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-800 text-sm">
-                            {comp.competencyName}
-                          </span>
-                          <span className="text-xs text-gray-500 tabular-nums">
-                            Уровень {comp.achievedLevel}
-                            {comp.nextLevel !== null && (
-                              <> &rarr; {comp.nextLevel}</>
-                            )}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          {getDevelopmentFocus(comp.competencyId)}
-                        </p>
-                      </div>
-                    ))}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-800 text-sm">
+                        {comp.competencyName}
+                      </span>
+                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-lg tabular-nums">
+                        L{comp.achievedLevel}
+                      </span>
+                    </div>
+                    <span
+                      className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                        comp.axis === "Craft"
+                          ? "bg-blue-100 text-blue-600"
+                          : comp.axis === "Impact"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-purple-100 text-purple-600"
+                      }`}
+                    >
+                      {comp.axis}
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
+            </div>
+            <div>
+              <h3 className="font-semibold text-amber-700 mb-3 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-600 text-xs">
+                  &#x2193;
+                </span>
+                Зоны роста
+              </h3>
+              <div className="space-y-2.5">
+                {weaknesses.map((comp) => (
+                  <div
+                    key={comp.competencyId}
+                    className="p-3.5 rounded-xl bg-amber-50 border border-amber-100"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-800 text-sm">
+                        {comp.competencyName}
+                      </span>
+                      <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-lg tabular-nums">
+                        L{comp.achievedLevel}
+                      </span>
+                    </div>
+                    <span
+                      className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${
+                        comp.axis === "Craft"
+                          ? "bg-blue-100 text-blue-600"
+                          : comp.axis === "Impact"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-purple-100 text-purple-600"
+                      }`}
+                    >
+                      {comp.axis}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
