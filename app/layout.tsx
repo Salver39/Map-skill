@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "UX/CX Research — Карта компетенций",
+  title: "Product/CX Research — Карта компетенций",
   description:
-    "Интерактивный инструмент самооценки компетенций UX/CX исследователей",
+    "Интерактивный инструмент самооценки компетенций Product/CX исследователей",
 };
 
 export default function RootLayout({

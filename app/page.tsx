@@ -132,7 +132,7 @@ export default function WelcomePage() {
             Карта компетенций
           </h1>
           <p className="text-lg text-gray-500">
-            UX/CX Research Assessment Tool
+            Product/CX Research Assessment Tool
           </p>
         </div>
 
@@ -237,7 +237,7 @@ export default function WelcomePage() {
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                <span className="block text-[15px]">UX Research</span>
+                <span className="block text-[15px]">Product Research</span>
                 <span
                   className={`block text-xs mt-0.5 font-normal ${
                     profile === "ux" ? "text-brand-200" : "text-gray-400"
