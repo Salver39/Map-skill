@@ -35,7 +35,7 @@ export default function WelcomePage() {
     loadModel().then(setModel).catch(console.error);
   }, []);
 
-  const totalItems = model?.items.length ?? 114;
+  const totalItems = model?.items.length ?? 99;
 
   const anyProgress =
     hydrated &&
@@ -271,7 +271,7 @@ export default function WelcomePage() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
           <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
             <span className="px-2.5 py-1 bg-gray-100 rounded-lg">
-              114 утверждений
+              99 утверждений
             </span>
             <span className="px-2.5 py-1 bg-gray-100 rounded-lg">
               13 компетенций
